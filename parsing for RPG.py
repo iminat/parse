@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # URL сайта, который вы хотите парсить
-url = 'https://www.exportchel.ru/'
+url = 'https://bashexport.com/events-announcement/'
 
 # Ключевые слова, которые вы ищете на сайте
 

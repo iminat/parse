@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import re
 
 # Множество для отслеживания посещенных страниц
 visited_pages = set()
@@ -25,16 +26,17 @@ def search_keywords_on_page(page_url, keywords):
         # Инициализируем объект BeautifulSoup для парсинга
         soup = BeautifulSoup(page_content, 'html.parser')
 
-        # Поиск ключевых слов на странице
-        for keyword in keywords:
-            # Находим все элементы, содержащие ключевое слово
-            elements_with_keyword = soup.find_all(string=lambda text: keyword in text)
+        # Используем регулярное выражение для разделения текста на предложения
+        sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', soup.get_text())
 
-            # Выводим результаты
-            if elements_with_keyword:
-                print(f'Ключевое слово "{keyword}" найдено на странице {page_url}:')
-                for element in elements_with_keyword:
-                    print(element.strip())
+        # Поиск ключевых слов на странице и их окружения
+        for keyword in keywords:
+            for sentence in sentences:
+                # Use re.IGNORECASE to perform a case-insensitive search
+                if re.search(rf'\b{re.escape(keyword)}\b', sentence):
+                    # Выводим текущее предложение
+                    print(f'Ключевое слово "{keyword}" найдено на странице {page_url}:')
+                    print(sentence.strip())
 
         # Поиск ссылок на другие страницы и рекурсивный вызов функции для них
         links = soup.find_all('a', href=True)
@@ -46,19 +48,12 @@ def search_keywords_on_page(page_url, keywords):
         print(f'Ошибка при отправке запроса к странице {page_url}.')
 
 # URL сайта, который вы хотите парсить
-base_url = 'https://bashexport.com/events-announcement/'
+base_url = 'https://kalugaexport.ru/'
 
 # Ключевые слова, которые вы ищете на сайте
-keywords = ['оаэ', 'арабские эмираты', 'саудовская аравия', '\bоман\b', 'бахрейн',
-    'катар', 'кувейт', 'египет', 'алжир', 'кения', 'танзания', 'эфиопия',
-    'нигерия', 'уганда', 'ливия', 'иран', 'пакистан', 'индия',
-    'ОАЭ', 'АРАБСКИЕ ЭМИРАТЫ', 'САУДОВСКАЯ АРАВИЯ', 'ОМАН', 'БАХРЕЙН',
-    'КАТАР', 'КУВЕЙТ', 'ЕГИПЕТ', 'АЛЖИР', 'КЕНИЯ', 'ТАНЗАНИЯ', 'ЭФИОПИЯ',
-    'НИГЕРИЯ', 'УГАНДА', 'ЛИВИЯ', 'ИРАН', 'ПАКИСТАН', 'ИНДИЯ',
-    'Оаэ', 'Арабские эмираты', 'Саудовская аравия', 'Оман', 'Бахрейн',
-    'Катар', 'Кувейт', 'Египет', 'Алжир', 'Кения', 'Танзания', 'Эфиопия',
-    'Нигерия', 'Уганда', 'Ливия', 'Иран', 'Пакистан', 'Индия'
-]
+keywords = ['оаэ', 'арабские эмираты', 'саудовская аравия', 'оман', 'бахрейн',
+            'катар', 'кувейт', 'египет', 'алжир', 'кения', 'танзания', 'эфиопия',
+            'нигерия', 'уганда', 'ливия', 'иран', 'пакистан', 'индия']
 
 # Начинаем поиск на главной странице
 search_keywords_on_page(base_url, keywords)
